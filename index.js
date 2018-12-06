@@ -18,31 +18,35 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
 
         console.log(senderName + " " + senderID + " " + messageText + " " + recipientName + " " + recipientID + " " + timestamp.toString())
 
-        const deviceToken = admin.firestore.document(`/Users/${recipientID}/deviceToken`).once('value');
+        let deviceTokenQuery = firestore.collection(`/Users/${recipientID}/device_tokens`);
 
-        return deviceToken.then(result => {
+        deviceTokenQuery.get().then(querySnapshot => {
 
-            const token_id = result.val();
+            let tokens = querySnapshot.docs;
 
+            for (let doc of tokens) {
 
-            const payload = {
-                notification: {
-                    title: senderName,
-                    body: messageText,
-                    icon: "default"
-                }
-            };
+                const token_id = doc();
 
-            return admin.messaging().sendToDevice(token_id, payload).then(response => {
+                const payload = {
+                    notification: {
+                        title: senderName,
+                        body: messageText,
+                        icon: "default"
+                    }
+                };
 
-                console.log('Notification Feature')
+                return admin.messaging().sendToDevice(token_id, payload).then(response => {
 
-            });
+                    return console.log('Notification sent to device with ID: ' + token_id)
 
+                });
+
+            }
 
         });
 
-
     });
+
 
 
