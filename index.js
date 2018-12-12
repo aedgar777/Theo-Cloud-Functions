@@ -18,23 +18,19 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
 
         console.log(senderName + " " + senderID + " " + messageText + " " + recipientName + " " + recipientID + " " + timestamp.toString());
 
-        let deviceTokenQuery = admin.firestore().collection(`/Users/${recipientID}/device_tokens/`);
+        let deviceTokenQuery = admin.firestore().collection(`/users/${recipientID}/device_tokens/`);
 
         return deviceTokenQuery.get().then(querySnapshot => {
-            console.log('deviceTokenQuery returned');
 
-            let tokens = querySnapshot.docs;
+            let tokenShapshot = querySnapshot.docs;
 
-            console.log('1');
+            const notificationPromises = tokenShapshot.map(doc => {
 
 
-            const notificationPromises = tokens.map(token => {
-                console.log('2');
+                let token_id = doc.data().tokenID;
 
-                let token_id = token.tokenID.toString();
+                console.log("token_id: " + token_id);
 
-                console.log(token_id);
-                console.log('3');
 
                 const payload = {
                     notification: {
@@ -45,10 +41,20 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
                 };
 
 
-                return admin.messaging().sendToDevice(token_id, payload)
+                return admin.messaging().sendToDevice(token_id, payload).then(response => {
+
+                    console.log("Notification sent: ", response);
+                    console.log(response.results[0].error);
+                })
+                    .catch(error => {
+
+                        console.log("Error sending message: ", error);
+
+                    });
+
 
             });
-            console.log('4')
+
             return Promise.all(notificationPromises);
 
         });
