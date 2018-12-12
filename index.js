@@ -44,7 +44,6 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
                 return admin.messaging().sendToDevice(token_id, payload).then(response => {
 
                     console.log("Notification sent: ", response);
-                    console.log(response.results[0].error);
                 })
                     .catch(error => {
 
