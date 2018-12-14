@@ -36,8 +36,13 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
                     notification: {
                         title: senderName,
                         body: messageText,
-                        icon: "default"
+                    },
+                    data:{
+
+                        senderID: senderID
+
                     }
+
                 };
 
 
