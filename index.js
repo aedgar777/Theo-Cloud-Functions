@@ -15,53 +15,73 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
         const recipientName = newMessage.recipientName;
         const recipientID = newMessage.recipientUID;
         const timestamp = newMessage.timestamp;
+        var notificationsOn = null;
 
         console.log(senderName + " " + senderID + " " + messageText + " " + recipientName + " " + recipientID + " " + timestamp.toString());
 
         let deviceTokenQuery = admin.firestore().collection(`/users/${recipientID}/device_tokens/`);
 
-        return deviceTokenQuery.get().then(querySnapshot => {
+        var idsToBeSorted = [senderID, recipientID];
+        idsToBeSorted.sort();
+        var threadID = idsToBeSorted[0]+idsToBeSorted[1];
+        console.log(threadID);
+        let recipientThread = functions.firestore.document(`users/${recipientID}/threads/${threadID}`);
 
-            let tokenShapshot = querySnapshot.docs;
+        recipientThread
+            .onUpdate((snapshot, context) => {
+            const threadDetails = snapshot.data();
 
-            const notificationPromises = tokenShapshot.map(doc => {
+            notificationsOn = threadDetails.notificationsOn;
 
+        });
 
-                let token_id = doc.data().tokenID;
+        if (notificationsOn !== false) {
 
-                console.log("token_id: " + token_id);
+            return deviceTokenQuery.get().then(querySnapshot => {
 
+                let tokenShapshot = querySnapshot.docs;
 
-                const payload = {
-                    notification: {
-                        title: senderName,
-                        body: messageText,
-                    },
-                    data:{
-
-                        senderID: senderID
-
-                    }
-
-                };
+                const notificationPromises = tokenShapshot.map(doc => {
 
 
-                return admin.messaging().sendToDevice(token_id, payload).then(response => {
+                    let token_id = doc.data().tokenID;
 
-                    console.log("Notification sent: ", response);
-                })
-                    .catch(error => {
+                    console.log("token_id: " + token_id);
 
-                        console.log("Error sending message: ", error);
 
-                    });
+                    const payload = {
+                        notification: {
+                            title: senderName,
+                            body: messageText,
+                        },
+                        data: {
 
+                            senderID: senderID,
+                            senderName: senderName
+
+                        }
+
+                    };
+
+
+                    return admin.messaging().sendToDevice(token_id, payload).then(response => {
+
+                        console.log("Notification sent: ", response);
+                    })
+                        .catch(error => {
+
+                            console.log("Error sending message: ", error);
+
+                        });
+
+
+                });
+
+                return Promise.all(notificationPromises);
 
             });
 
-            return Promise.all(notificationPromises);
-
-        });
+        }
 
     });
 
