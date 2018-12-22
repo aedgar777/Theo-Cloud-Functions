@@ -24,9 +24,9 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
         console.log(threadID);
 
 
-        return admin.firestore().collection(`users/${recipientID}/threads/`).doc(`${threadID}`).get().then(queryResult => {
+        return admin.firestore().collection(`users/${recipientID}/threads/${threadID}/settings`).doc(`notificationsOn`).get().then(queryResult => {
 
-            let notificationsOn = queryResult.data().notificationsOn;
+            let notificationsOn = queryResult.data().storedBoolean;
             console.log(notificationsOn);
 
 
