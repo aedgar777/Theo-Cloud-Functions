@@ -26,8 +26,9 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
 
         return admin.firestore().collection(`users/${recipientID}/threads/${threadID}/settings`).doc(`notificationsOn`).get().then(queryResult => {
 
+
             let notificationsOn = queryResult.data().storedBoolean;
-            console.log(notificationsOn);
+            console.log("notificationsOn: " +notificationsOn);
 
 
             if (notificationsOn !== false) {
@@ -40,6 +41,8 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
 
 
                         let token_id = doc.data().tokenID;
+
+                        console.log("token ID: " + token_id);
 
 
                         const payload = {
@@ -83,6 +86,8 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
         });
 
     });
+
+
 
 
 
