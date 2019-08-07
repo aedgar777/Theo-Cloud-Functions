@@ -13,7 +13,7 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
         const senderID = newMessage.authorUID;
         const messageText = newMessage.message;
         const recipientID = newMessage.recipientUID;
-        var notificationsOn = null;
+
 
         var idsToBeSorted = [senderID, recipientID];
         idsToBeSorted.sort();
@@ -28,7 +28,7 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
 
 
             let notificationsOn = queryResult.data().storedBoolean;
-            console.log("notificationsOn: " +notificationsOn);
+            console.log("notificationsOn: ",notificationsOn);
 
 
             if (notificationsOn !== false) {
@@ -52,7 +52,7 @@ exports.sendDMNotification = functions.firestore.document('/dm_threads/{thread_i
                                 title: senderName,
                                 body: messageText,
                                 senderID: senderID,
-                                senderName: senderName
+                                recipientID: recipientID
 
                             }
 
